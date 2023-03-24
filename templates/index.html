@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+{% for post in posts %}
+<h1><a href='http://127.0.0.1:5000/{{post.id}}'>{{post.title}}</a></h1>
+<p>{{post.description}}</p>
+<p>{{post.author.name}}</p>
+<p>{{post.date}}</p>
+{%endfor%}
+{% endblock %}
