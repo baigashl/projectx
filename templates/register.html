@@ -1,26 +1,15 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>form</title>
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-	<style type="text/css">
-		.container{
-			margin-top: 8%;
-			width: 400px;
-			border: ridge 1.5px white;
-			padding: 20px;
-		}
-		body{
-			background: #E0EAFC;  /* fallback for old browsers */
-background: -webkit-linear-gradient(to right, #CFDEF3, #E0EAFC);  /* Chrome 10-25, Safari 5.1-6 */
-background: linear-gradient(to right, #CFDEF3, #E0EAFC); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-
-		}
-	</style>
-</head>
+{%extends 'base.html'%}
+{% block content %}
 <body>
 	<div class="container">
 		<h2>Registration Form</h2>
+    {% with messages = get_flashed_messages() %}
+{% if messages and 'Email' in messages[0] %}
+    <div class="notification is-danger">
+        {{ messages[0] }}. Go to <a href="{{ url_for('login') }}">login page</a>.
+    </div>
+{% endif %}
+{% endwith %}
 	<form action="" method="post">
 		<div class="form-group">
     <label for="name">First Name</label>
@@ -40,10 +29,16 @@ background: linear-gradient(to right, #CFDEF3, #E0EAFC); /* W3C, IE 10+/ Edge, F
   </div>
   <div class="form-group">
     <label for="Password">Password</label>
+    {% with messages = get_flashed_messages() %}
+{% if messages and 'password' in messages[0] %}
+    <div class="notification is-danger">
+        {{ messages[0] }}</a>.
+    </div>
+{% endif %}
+{% endwith %}
     <input type="password" class="form-control" id="exampleInputPassword" name="password">
   </div>
   <button type="submit" class="btn btn-primary" name="create">Sign up</button>
 </form>
 </div>
-</body>
-</html>
+{% endblock %}

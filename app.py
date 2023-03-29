@@ -1,10 +1,14 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, flash
 from flask_login import login_required, current_user, LoginManager, login_user, logout_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import os
 import re
 from models import db, Post, MyUser
+ 
+app = Flask(__name__, static_url_path='/static')
 
-app = Flask(__name__)
+
 
 login_manager = LoginManager()
 login_manager.login_view = 'login'
@@ -105,17 +109,23 @@ def register():
         second_name = request.form['second_name'] 
         password = request.form['password'] 
         age = request.form['age'] 
-        if validate_password(password):
-            MyUser.create(
-                email=email,
-                name=name,
-                second_name=second_name,
-                password=password,
-                age=age
-            )
-            return redirect('/login/')
+        user = MyUser.select().where(MyUser.email==email).first()
+        if user:
+            flash('Email address already exists')
+            return redirect('/register/')
         else:
-            return 'wrong password'
+            if validate_password(password):
+                MyUser.create(
+                    email=email,
+                    name=name,
+                    second_name=second_name,
+                    password=generate_password_hash(password, method='sha256'),
+                    age=age
+                )
+                return redirect('/login/')
+            else:
+                flash('wrong password')
+                return redirect('/register/')
     return render_template('register.html')
 
 
@@ -125,16 +135,28 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         user = MyUser.select().where(MyUser.email==email).first()
-        if password==user.password:
+        if not user or not check_password_hash(user.password, password):
+            flash('Please check your login details and try again.')
+            return redirect('/login/')
+        else: 
             login_user(user)
-            return redirect('/profile/')
-        return redirect('/register/')
+            return redirect(f'/current_profile/')
+        
     return render_template('login.html')
 
-@app.route('/profile/')
+@app.route('/profile/<int:id>/')
 @login_required
-def profile():
-    return render_template('profile.html', user=current_user)
+def profile(id):
+    user = MyUser.select().where(MyUser.id==id).first()
+    posts = Post.select().where(Post.author_id==id)
+    return render_template('profile.html', user=user, posts=posts)
+
+
+@app.route('/current_profile/')
+@login_required
+def current_profile():
+    posts = Post.select().where(Post.author_id==current_user.id)
+    return render_template('profile.html', user=current_user, posts=posts)
 
 
 @app.route('/logout/')
